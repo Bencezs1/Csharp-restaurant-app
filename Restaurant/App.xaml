@@ -1,0 +1,23 @@
+﻿<Application x:Class="Restaurant.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Restaurant" 
+             xmlns:views="clr-namespace:Restaurant.Views"
+             xmlns:vms="clr-namespace:Restaurant.ViewModels"
+             >
+    <Application.Resources>
+        <DataTemplate DataType="{x:Type vms:LoginViewModel}">
+            <views:LoginView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:HomeViewModel}">
+            <views:HomeView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:BrowseViewModel}">
+            <views:BrowseView/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vms:CartViewModel}">
+            <views:CartView/>
+        </DataTemplate>
+    </Application.Resources>
+</Application>

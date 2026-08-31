@@ -1,0 +1,15 @@
+﻿using Restaurant.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Restaurant.Services
+{
+    public interface IHomeNavigationService
+    {
+        ViewModelBase CurrentView { get; }
+        void NavigateTo<T>() where T : ViewModelBase;
+    }
+}
