@@ -11,12 +11,12 @@ namespace Restaurant.Services
     {
         Task<User?> LoginUserAsync(string username, string password);
 
-        Task<User> RegisterUserAsync(
+        Task<bool> RegisterUserAsync(
             string firstName,
             string lastName,
             string username,
             string email,
-            string password);
+            string passwordm);
 
         Task<User> UpdateUserAsync(User updated);
 

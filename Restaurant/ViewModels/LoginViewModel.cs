@@ -59,6 +59,12 @@ namespace Restaurant.ViewModels
             }
         }
 
+        [RelayCommand]
+        private void NavigateToRegister()
+        {
+            NavigationService.NavigateTo<RegisterViewModel>();
+        }
+
         private bool CanValidate()
         {
             ValidateAllProperties();

@@ -109,7 +109,7 @@ namespace Restaurant.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedAt", "Email", "FirstName", "LastName", "Password", "UpdatedAt", "Username" },
-                values: new object[] { 1, new DateTime(2026, 7, 17, 12, 45, 25, 505, DateTimeKind.Utc).AddTicks(5478), "a@a.com", "Test", "Test", "$2a$12$EK8fSAXneMdCflHTyjlI/.OAXxbbPTmZaFC4./MrKrkNfuolbGJlW", null, "admin" });
+                values: new object[] { 1, new DateTime(2026, 8, 31, 18, 12, 51, 64, DateTimeKind.Utc).AddTicks(9569), "a@a.com", "Test", "Test", "$2a$12$iRfGkjcYh6qeGnjQwBxKxe2tYrnZJBzW1gWrrd.SxZ7vXTVYU47xe", null, "admin" });
 
             migrationBuilder.InsertData(
                 table: "Carts",

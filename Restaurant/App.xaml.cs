@@ -44,6 +44,7 @@ namespace Restaurant
                 services.AddTransient<HomeViewModel>();
                 services.AddTransient<BrowseViewModel>();
                 services.AddTransient<CartViewModel>();
+                services.AddTransient<RegisterViewModel>();
 
 
                 services.AddSingleton<MainWindow>(provider =>

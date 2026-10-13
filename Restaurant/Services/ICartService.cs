@@ -9,7 +9,6 @@ namespace Restaurant.Services
 {
     public interface ICartService
     {
-        Task<bool> CreateCart(User user);
         Task<Cart?> GetCartByUserId(int userId);
     }
 }

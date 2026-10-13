@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Restaurant.Data;
 using Restaurant.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Restaurant.Services
 {
@@ -18,21 +13,17 @@ namespace Restaurant.Services
             _context = context;
         }
 
-        public async Task<bool> AddItemToCart(CartItem item, int userId)
+        public async Task<bool> AddItemToCart(
+            CartItem item,
+            int cartId)
         {
             var cart = await _context.Carts
-                .Include(x => x.Items)
-                .ThenInclude(x => x.Meal)
-                .FirstOrDefaultAsync(x => x.UserId == userId);
+                .FirstOrDefaultAsync(x => x.Id == cartId);
 
             if (cart == null)
-            {
                 return false;
-            }
 
-            var existing = await _context.CartItems
-                .FirstOrDefaultAsync(x =>
-                    x.MealId == item.MealId);
+            var existing = cart.Items.FirstOrDefault(x => x.MealId == item.MealId);
 
             if (existing != null)
             {
@@ -41,9 +32,7 @@ namespace Restaurant.Services
             else
             {
                 item.CartId = cart.Id;
-                item.Cart = cart;
-
-                cart.Items.Add(item);
+                _context.CartItems.Add(item);
             }
 
             await _context.SaveChangesAsync();
@@ -51,23 +40,21 @@ namespace Restaurant.Services
             return true;
         }
 
-        public async Task<bool> DeleteItemFromCart(CartItem item, int userId)
+        public async Task<bool> DeleteItemFromCart(
+            CartItem item,
+            int cartId)
         {
             var cart = await _context.Carts
-                .Include(x => x.Items)
-                .FirstOrDefaultAsync(x => x.UserId == userId);
+                .FirstOrDefaultAsync(x => x.Id == cartId);
 
             if (cart == null)
                 return false;
 
+            cart.Items.Remove(item);
 
-            _context.CartItems.Remove(item);
-
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();  
 
             return true;
         }
-
-
     }
 }

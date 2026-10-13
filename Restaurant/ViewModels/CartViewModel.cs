@@ -14,10 +14,10 @@ namespace Restaurant.ViewModels
 {
     public partial class CartViewModel : ViewModelBase
     {
-        public ICartService CartService { get; set; }
-        public ICartItemService CartItemService { get; set; }
-        public IUserSession Session { get; set; }
-        public User CurrentUser { get; set; }
+        public ICartService CartService { get; }
+        public ICartItemService CartItemService { get; }
+        public IUserSession Session { get; }
+        public User CurrentUser { get; }
 
         [ObservableProperty]
         private ObservableCollection<CartItem> _cart;
@@ -48,7 +48,7 @@ namespace Restaurant.ViewModels
         [RelayCommand]
         private async Task RemoveFromCart(CartItem item)
         {
-            var success = await CartItemService.DeleteItemFromCart(item, CurrentUser.Id);
+            var success = await CartItemService.DeleteItemFromCart(item, CurrentUser.Cart.Id);
 
             if (success)
             {

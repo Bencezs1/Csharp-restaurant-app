@@ -49,7 +49,7 @@ namespace Restaurant.ViewModels
                 Quantity = quantity
             };
 
-            var success = await CartItemService.AddItemToCart(item, CurrentUser.Id);
+            var success = await CartItemService.AddItemToCart(item, CurrentUser.Cart.Id);
 
             if (success)
             {

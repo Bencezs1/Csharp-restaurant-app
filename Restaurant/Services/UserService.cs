@@ -13,7 +13,6 @@ namespace Restaurant.Services
     public class UserService : IUserService
     {
         private readonly ApplicationDbContext _context;
-
         public UserService(ApplicationDbContext context)
         {
             _context = context;
@@ -26,12 +25,10 @@ namespace Restaurant.Services
             var user = await _context.Users
                 .FirstOrDefaultAsync(x => x.Username == username);
 
-            if (user == null)
+            if (user == null || !PasswordHasher.VerifyPassword(password, user.Password))
                 return null;
 
-            bool passwordValid = PasswordHasher.VerifyPassword(password, user.Password);
-
-            return passwordValid ? user : null;
+            return user;
         }
 
         public async Task<User> UpdateUserAsync(User updated)
@@ -64,7 +61,7 @@ namespace Restaurant.Services
         }
 
 
-        public async Task<User> RegisterUserAsync(
+        public async Task<bool> RegisterUserAsync(
                 string firstName,
                 string lastName,
                 string username,
@@ -92,6 +89,7 @@ namespace Restaurant.Services
                     "Email already exists.");
             }
 
+            var cart = new Cart();
 
             var user = new User
             {
@@ -102,18 +100,21 @@ namespace Restaurant.Services
                 Password = PasswordHasher.HashPassword(password)
             };
 
+            user.Cart = cart;
+
 
             try
             {
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                return user;
+                return true;
             }
             catch (DbUpdateException ex)
             {
                 throw new Exception(
                     "Could not save user to database.", ex);
+             
             }
         }
 

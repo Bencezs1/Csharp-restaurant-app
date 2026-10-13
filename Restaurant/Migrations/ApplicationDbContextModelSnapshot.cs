@@ -153,11 +153,11 @@ namespace Restaurant.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 7, 17, 12, 45, 25, 505, DateTimeKind.Utc).AddTicks(5478),
+                            CreatedAt = new DateTime(2026, 8, 31, 18, 12, 51, 64, DateTimeKind.Utc).AddTicks(9569),
                             Email = "a@a.com",
                             FirstName = "Test",
                             LastName = "Test",
-                            Password = "$2a$12$EK8fSAXneMdCflHTyjlI/.OAXxbbPTmZaFC4./MrKrkNfuolbGJlW",
+                            Password = "$2a$12$iRfGkjcYh6qeGnjQwBxKxe2tYrnZJBzW1gWrrd.SxZ7vXTVYU47xe",
                             Username = "admin"
                         });
                 });
