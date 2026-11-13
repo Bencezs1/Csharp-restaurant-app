@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,41 +16,48 @@ namespace Restaurant.ViewModels
 {
     public partial class BrowseViewModel : ViewModelBase
     {
-        public IUserSession Session { get; set; }
-        public ICartItemService CartItemService { get; set; }
-        public IMealService MealService { get; set; }
-        public ICartService CartService { get; set; }
+        private readonly ICartItemService _cartItemService;
+        private readonly IMealService _mealService;
+        private readonly SessionUser _user;
 
-        public ObservableCollection<Meal> Meals { get; set; }
-
-        [ObservableProperty]
-        private User _currentUser;
-
+        public ObservableCollection<Meal> Meals { get; } = new ObservableCollection<Meal>();
 
         private int quantity = 5;
 
-        public BrowseViewModel(IUserSession session, ICartItemService cartItemService, IMealService mealService, ICartService cartService)
+        public BrowseViewModel(IUserSession session, ICartItemService cartItemService, IMealService mealService)
         {
-            Session = session;
-            CartItemService = cartItemService;
-            CurrentUser = Session.CurrentUser;
-            MealService = mealService;
-            CartService = cartService;
-            Meals = new ObservableCollection<Meal>(MealService.GetAll());
+            _user = session.CurrentUser
+                ?? throw new InvalidOperationException("No user is signed in.");
+            _cartItemService = cartItemService;
+            _mealService = mealService;
 
+            // Load without blocking the UI thread; errors are handled inside.
+            _ = LoadMealsAsync();
+        }
+
+        private async Task LoadMealsAsync()
+        {
+            try
+            {
+                var meals = await _mealService.GetAllAsync();
+
+                Meals.Clear();
+                foreach (var meal in meals)
+                {
+                    Meals.Add(meal);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                MessageBox.Show("Could not load the menu.");
+            }
         }
 
         [RelayCommand]
         private async Task AddToCart(Meal meal)
         {
-            var item = new CartItem
-            {
-                Meal = meal,
-                MealId = meal.Id,
-                Quantity = quantity
-            };
-
-            var success = await CartItemService.AddItemToCart(item, CurrentUser.Cart.Id);
+            var success = await _cartItemService.AddItemToCart(_user.CartId, meal.Id, quantity);
 
             if (success)
             {

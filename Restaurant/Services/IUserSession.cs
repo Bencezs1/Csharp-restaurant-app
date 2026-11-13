@@ -9,10 +9,10 @@ namespace Restaurant.Services
 {
     public interface IUserSession
     {
-        User? CurrentUser { get; }
+        SessionUser? CurrentUser { get; }
         bool IsLoggedIn { get; }
 
-        void SignIn(User user);
+        void SignIn(SessionUser user);
         void SignOut();
 
     }

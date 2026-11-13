@@ -6,55 +6,62 @@ namespace Restaurant.Services
 {
     public class CartItemService : ICartItemService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public CartItemService(ApplicationDbContext context)
+        public CartItemService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<bool> AddItemToCart(
-            CartItem item,
-            int cartId)
+            int cartId,
+            int mealId,
+            int quantity)
         {
-            var cart = await _context.Carts
-                .FirstOrDefaultAsync(x => x.Id == cartId);
-
-            if (cart == null)
+            if (quantity <= 0)
                 return false;
 
-            var existing = cart.Items.FirstOrDefault(x => x.MealId == item.MealId);
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            if (!await context.Carts.AnyAsync(x => x.Id == cartId))
+                return false;
+
+            // Ask the database whether this meal is already in the cart,
+            // instead of relying on whatever happens to be loaded in memory.
+            var existing = await context.CartItems
+                .FirstOrDefaultAsync(x => x.CartId == cartId && x.MealId == mealId);
 
             if (existing != null)
             {
-                existing.Quantity += item.Quantity;
+                existing.Quantity += quantity;
             }
             else
             {
-                item.CartId = cart.Id;
-                _context.CartItems.Add(item);
+                context.CartItems.Add(new CartItem
+                {
+                    CartId = cartId,
+                    MealId = mealId,
+                    Quantity = quantity
+                });
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return true;
         }
 
         public async Task<bool> DeleteItemFromCart(
-            CartItem item,
+            int cartItemId,
             int cartId)
         {
-            var cart = await _context.Carts
-                .FirstOrDefaultAsync(x => x.Id == cartId);
+            await using var context = await _contextFactory.CreateDbContextAsync();
 
-            if (cart == null)
-                return false;
+            // The CartId filter makes sure the item really belongs to this cart.
+            var deleted = await context.CartItems
+                .Where(x => x.Id == cartItemId && x.CartId == cartId)
+                .ExecuteDeleteAsync();
 
-            cart.Items.Remove(item);
-
-            await _context.SaveChangesAsync();  
-
-            return true;
+            return deleted > 0;
         }
     }
 }

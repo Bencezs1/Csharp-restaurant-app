@@ -9,6 +9,6 @@ namespace Restaurant.Services
 {
     public interface IMealService
     {
-        List<Meal> GetAll();
+        Task<List<Meal>> GetAllAsync();
     }
 }

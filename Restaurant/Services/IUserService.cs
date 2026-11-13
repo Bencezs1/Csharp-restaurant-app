@@ -9,7 +9,7 @@ namespace Restaurant.Services
 {
     public interface IUserService
     {
-        Task<User?> LoginUserAsync(string username, string password);
+        Task<SessionUser?> LoginUserAsync(string username, string password);
 
         Task<bool> RegisterUserAsync(
             string firstName,

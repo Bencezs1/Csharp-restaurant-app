@@ -11,16 +11,20 @@ namespace Restaurant.Services
 {
     public class MealService : IMealService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public MealService(ApplicationDbContext context)
+        public MealService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
-        public List<Meal> GetAll()
+        public async Task<List<Meal>> GetAllAsync()
         {
-            return _context.Meals.ToList();
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            return await context.Meals
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

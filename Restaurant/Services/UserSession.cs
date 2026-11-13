@@ -9,11 +9,11 @@ namespace Restaurant.Services
 {
     public class UserSession : IUserSession
     {
-        public User? CurrentUser { get; private set; }
+        public SessionUser? CurrentUser { get; private set; }
         public bool IsLoggedIn => CurrentUser != null;
 
 
-        public void SignIn(User user)
+        public void SignIn(SessionUser user)
         {
             CurrentUser = user;
         }

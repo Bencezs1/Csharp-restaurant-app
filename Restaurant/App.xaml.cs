@@ -29,7 +29,9 @@ namespace Restaurant
                     );
                 });
 
-            services.AddScoped<IUserService, UserService>();
+                // The data services hold no state: each call creates and disposes
+                // its own DbContext through IDbContextFactory.
+                services.AddSingleton<IUserService, UserService>();
 
                 services.AddSingleton<INavigationService, NavigationService>();
                 services.AddSingleton<IHomeNavigationService, HomeNavigationService>();
@@ -71,6 +73,13 @@ namespace Restaurant
                 mainWindow.Show();
 
                 base.OnStartup(e);
+            }
+
+            protected override void OnExit(ExitEventArgs e)
+            {
+                _serviceProvider.Dispose();
+
+                base.OnExit(e);
             }
         }
 

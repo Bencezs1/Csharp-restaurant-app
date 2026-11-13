@@ -9,7 +9,7 @@ namespace Restaurant.Services
 {
     public interface ICartItemService
     {
-        Task<bool> AddItemToCart(CartItem item, int cartId);
-        Task<bool> DeleteItemFromCart(CartItem item, int cartId);
+        Task<bool> AddItemToCart(int cartId, int mealId, int quantity);
+        Task<bool> DeleteItemFromCart(int cartItemId, int cartId);
     }
 }

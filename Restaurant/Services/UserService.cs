@@ -12,31 +12,66 @@ namespace Restaurant.Services
 {
     public class UserService : IUserService
     {
-        private readonly ApplicationDbContext _context;
-        public UserService(ApplicationDbContext context)
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+        public UserService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
-        public async Task<User?> LoginUserAsync(string username, string password)
+        public async Task<SessionUser?> LoginUserAsync(string username, string password)
         {
             ValidateLogin(username, password);
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Username == username);
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            // The hash is read only to verify the password here; it never leaves this method.
+            var user = await context.Users
+                .Where(x => x.Username == username)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Username,
+                    x.FirstName,
+                    x.LastName,
+                    x.Email,
+                    x.Password,
+                    CartId = (int?)x.Cart.Id
+                })
+                .FirstOrDefaultAsync();
 
             if (user == null || !PasswordHasher.VerifyPassword(password, user.Password))
                 return null;
 
-            return user;
+            // Every user should have a cart; create one if the row is missing.
+            var cartId = user.CartId ?? await CreateCartAsync(context, user.Id);
+
+            return new SessionUser(
+                user.Id,
+                cartId,
+                user.Username,
+                user.FirstName,
+                user.LastName,
+                user.Email);
+        }
+
+        private static async Task<int> CreateCartAsync(ApplicationDbContext context, int userId)
+        {
+            var cart = new Cart { UserId = userId };
+
+            context.Carts.Add(cart);
+            await context.SaveChangesAsync();
+
+            return cart.Id;
         }
 
         public async Task<User> UpdateUserAsync(User updated)
         {
             try
             {
-                _context.Users.Update(updated);
-                await _context.SaveChangesAsync();
+                await using var context = await _contextFactory.CreateDbContextAsync();
+
+                context.Users.Update(updated);
+                await context.SaveChangesAsync();
                 return updated;
             }
             catch (DbUpdateException ex)
@@ -49,8 +84,10 @@ namespace Restaurant.Services
         {
             try
             {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
+                await using var context = await _contextFactory.CreateDbContextAsync();
+
+                context.Users.Remove(user);
+                await context.SaveChangesAsync();
 
                 return true;
             }
@@ -105,8 +142,10 @@ namespace Restaurant.Services
 
             try
             {
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                await using var context = await _contextFactory.CreateDbContextAsync();
+
+                context.Users.Add(user);
+                await context.SaveChangesAsync();
 
                 return true;
             }
@@ -121,14 +160,18 @@ namespace Restaurant.Services
 
         public async Task<bool> UsernameExistsAsync(string username)
         {
-            return await _context.Users
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            return await context.Users
                 .AnyAsync(x => x.Username == username);
         }
 
 
         public async Task<bool> EmailExistsAsync(string email)
         {
-            return await _context.Users
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            return await context.Users
                 .AnyAsync(x => x.Email == email);
         }
 

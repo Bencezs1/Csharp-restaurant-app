@@ -11,21 +11,24 @@ namespace Restaurant.Services
 {
     public class CartService : ICartService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
-        public CartService(ApplicationDbContext context)
+        public CartService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<Cart?> GetCartByUserId(int userId)
         {
-            var cart = await _context.Carts.Include(x=>x.Items).Include(x=>x.User).FirstOrDefaultAsync(x => x.UserId == userId);
-            if (cart == null)
-            {
-                return null;
-            }
-            return cart;
+            await using var context = await _contextFactory.CreateDbContextAsync();
+
+            // Meal is needed for Cart.Price and for the name column in the cart grid.
+            // The User is not loaded: nothing uses it, and it carries the password hash.
+            return await context.Carts
+                .AsNoTracking()
+                .Include(x => x.Items)
+                    .ThenInclude(x => x.Meal)
+                .FirstOrDefaultAsync(x => x.UserId == userId);
         }
     }
 }
